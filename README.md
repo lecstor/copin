@@ -101,15 +101,20 @@ API
 
 Get an instance of Copin with default settings. Copin is a singleton so files and env will only be loaded once. Config files will be read from `./config`.
 
-`const config = Copin({ dir: 'other-config-dir' });`
+`const config = Copin({ dir: 'config' });`
 
 Set the directory where config files will be found.
 
-`const config = Copin({ fresh: true });`
+`const config = Copin({ fresh: false });`
 
-Refresh the Copin singleton config. If config files or environmanet variables
-have changed and the Copin instance needs to be updated then this is how you do
-that. (used in Copin tests)
+If `fresh` is true the Copin singleton will be reloaded. If config files or
+environment variables have changed and the Copin instance needs to be updated then call `config = Copin({ fresh: true })`. (used in Copin tests)
+
+`const config = Copin({ noEnvMode: 'test' });`
+
+By default ENV_MAP will not be used when NODE_ENV='test'. You can set this to
+a different mode, or none at all, if you have the need. (also used in Copin
+tests)
 
 `const host = config.get('server.host');`
 
