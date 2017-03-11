@@ -8,27 +8,31 @@ Copin - opinionated config for node.. mostly..
 
 Based loosely on [node-config](https://github.com/lorenwest/node-config)
 
-It lets you define a set of default parameters and extend them for different
-deployment environments (development, qa, staging, production, etc.).
+Copin is a fairly simple config loader. It will read and merge a default config
+file, a config file matching the current NODE_ENV (development/production/etc),
+and variables from the shell environment.
 
-Config is always loaded from default.yaml.
-If a config file exists that has the same name as the value of NODE_ENV then
-that config is loaded and merged with the default config.
-eg when NODE_ENV=production, production.yaml will be loaded.
+**Config loading**
 
-ENV_MAP.yaml may also be added and will set mapped config values to the value
-of current shell environment variables. ENV_MAP is not used if NODE_ENV='test'.
+* config from default.yaml is always loaded.
+* If a config file exists that has the same name as the value of NODE_ENV then
+that config is loaded and merged with the default config. eg NODE_ENV=production,
+production.yaml will be loaded.
+* ENV_MAP.yaml can be used to set config values from shell environment variables. ENV_MAP is not used if NODE_ENV='test'.
 
 Quick Start
----------------
+-----------
 
 **Install**
 
 ```shell
-$ npm install copin
+$ yarn add copin
 ```
 
-**Create a config directory in your app directory and add a default config file.**
+**Create a config directory in your app and add a default config file.**
+
+The config directory is `config` by default, but this can be customised when
+creating the Copin instance.
 
 ```shell
 $ mkdir config
@@ -64,23 +68,21 @@ node:
 **Use config in your code:**
 
 ```js
-var Copin = require('copin');
-var config = Copin();
+import Copin from 'copin';
+const config = Copin();
+const config = Copin({ dir: 'other-config', fresh: true });
 //...
-var serverHost = config.get('server.host');
+const serverHost = config.get('server.host');
 // or
-var serverHost = config.server.host;
+const serverHost = config.server.host;
 
 server.start(serverHost);
 
 if (config.has('node.env')) {
-  var env = config.get('node.env');
+  const env = config.get('node.env');
   //...
 }
 ```
-
-`config.get()` will throw an exception for undefined keys to help catch typos and missing values.
-Use `config.has()` to test if a configuration value is defined.
 
 **Start your app server:**
 
@@ -91,6 +93,35 @@ $ NODE_ENV=production node my-app.js
 Running in this configuration, the `port` element of `server` will come from
 the `default.yaml` file, the `host` element will come from the `production.yaml`
 override file, and `node.env` will come from the shell environment variable.
+
+API
+---
+
+`const config = Copin();`
+
+Get an instance of Copin with default settings. Copin is a singleton so files and env will only be loaded once. Config files will be read from `./config`.
+
+`const config = Copin({ dir: 'other-config-dir' });`
+
+Set the directory where config files will be found.
+
+`const config = Copin({ fresh: true });`
+
+Refresh the Copin singleton config. If config files or environmanet variables
+have changed and the Copin instance needs to be updated then this is how you do
+that. (used in Copin tests)
+
+`const host = config.get('server.host');`
+
+`get` will throw an exception for undefined keys to help catch typos and missing values.
+
+`const hasHost = config.has('server.host');`
+
+Use `has` to test if a configuration value is defined. Returns true|false.
+
+`const host = config.server.host;`
+
+If you prefer you can access config values directly as js object properties.
 
 License
 -------
