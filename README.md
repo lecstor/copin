@@ -4,7 +4,7 @@ Configure your Node.js Applications
 Introduction
 ------------
 
-Copin - Opinionated Config.. mostly..
+Copin - opinionated config for node.. mostly..
 
 Based loosely on [node-config](https://github.com/lorenwest/node-config)
 
@@ -67,8 +67,8 @@ var serverHost = config.server.host;
 
 server.start(serverHost);
 
-if (config.has('optionalFeature.detail')) {
-  var detail = config.get('optionalFeature.detail');
+if (config.has('node.env')) {
+  var env = config.get('node.env');
   //...
 }
 ```
@@ -79,13 +79,12 @@ Use `config.has()` to test if a configuration value is defined.
 **Start your app server:**
 
 ```shell
-$ export NODE_ENV=production
-$ node my-app.js
+$ NODE_ENV=production node my-app.js
 ```
 
 Running in this configuration, the `port` element of `server` will come from
-the `default.yaml` file, and the `host` element will come from the
-`production.yaml` override file.
+the `default.yaml` file, the `host` element will come from the `production.yaml`
+override file, and `node.env` will come from the shell environment variables.
 
 License
 -------
