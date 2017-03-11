@@ -1,0 +1,6 @@
+---
+# node.env: NODE_ENV
+# prop3: NODE_ENV
+node:
+  env: NODE_ENV
+fromEnv: NODE_ENV
