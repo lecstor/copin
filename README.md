@@ -11,16 +11,26 @@ Based loosely on [node-config](https://github.com/lorenwest/node-config)
 It lets you define a set of default parameters and extend them for different
 deployment environments (development, qa, staging, production, etc.).
 
-Configurations are stored in YAML configuration files within your application,
-and can be overridden and extended by environment variables.
+Config is always loaded from default.yaml.
+If a config file exists that has the same name as the value of NODE_ENV then
+that config is loaded and merged with the default config.
+eg when NODE_ENV=production, production.yaml will be loaded.
+
+ENV_MAP.yaml may also be added and will set mapped config values to the value
+of current shell environment variables. ENV_MAP is not used if NODE_ENV='test'.
 
 Quick Start
 ---------------
 
-**Install in your app directory, and edit the default config file.**
+**Install**
 
 ```shell
 $ npm install copin
+```
+
+**Create a config directory in your app directory and add a default config file.**
+
+```shell
 $ mkdir config
 $ vi config/default.yaml
 ```
@@ -30,11 +40,7 @@ server:
   port: 8080
 ```
 
-**Edit config overrides for production deployment:**
-
-```shell
- $ vi config/production.yaml
-```
+**Add `config/production.yaml` to be merged into config when NODE_ENV=production:**
 
 ```yaml
 server:
@@ -42,9 +48,9 @@ server:
   port: 80
 ```
 
-**Edit config ENV var overrides:**
+**Add `config/ENV_MAP.yaml` to map config values to environment variables:**
 
-ENV var overrides will not be set when NODE_ENV is 'test'
+`ENV_MAP.yaml` will not be used when NODE_ENV='test'.
 
 ```shell
  $ vi config/ENV_MAP.yaml
@@ -55,7 +61,7 @@ node:
   env: NODE_ENV
 ```
 
-**Use configs in your code:**
+**Use config in your code:**
 
 ```js
 var Copin = require('copin');
@@ -84,7 +90,7 @@ $ NODE_ENV=production node my-app.js
 
 Running in this configuration, the `port` element of `server` will come from
 the `default.yaml` file, the `host` element will come from the `production.yaml`
-override file, and `node.env` will come from the shell environment variables.
+override file, and `node.env` will come from the shell environment variable.
 
 License
 -------
