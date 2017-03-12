@@ -40,10 +40,15 @@ describe('load config', () => {
     expect(config).toBe(config2);
   });
 
-  it('mode config overrides default config', () => {
+  it('NODE_ENV config overrides default config', () => {
     const config = Copin(defaultOpts);
     expect(config.fromDefault).toBe('Hello World!');
     expect(config.fromTest).toBe('set by test.yaml');
+  });
+
+  it('external config overrides NODE_ENV config', () => {
+    const config = Copin({ ...defaultOpts, extConfig: { fromExt: 'set by external config' } });
+    expect(config.fromExt).toBe('set by external config');
   });
 
   it('throws an error on invalid noNodeEnvConfig option', () => {

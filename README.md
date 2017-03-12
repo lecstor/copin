@@ -113,13 +113,14 @@ directory.
 var config = Copin({ dir: 'copin/config/files' });
 ```
 
-option  | type      | description
---------|-----------|------------
-dir     | {String}  | relative path to the config directory. defaults to `config`
-reload  | {Boolean} | if true, config will be reloaded. defaults to false
-fileOnlyNodeEnv | {String}  | a NODE_ENV value for which environmental variables should not be merged into the config. defaults to `test`
-noNodeEnvConfig | {String} | what to do if there is no config for the current NODE_ENV. May be `null`, `'warn'`, or `'error'`. Defaults to null.
-isGlobal | {Boolean} | if true then imports of the same installation of Copin will share the config object. Defaults to `true`
+option          | type    | description
+----------------|---------|------------
+dir             | String  | relative path to the config directory. defaults to `config`
+reload          | Boolean | if true, config will be reloaded. defaults to false
+fileOnlyNodeEnv | String  | a NODE_ENV value for which environmental variables should not be merged into the config. defaults to `test`
+noNodeEnvConfig | String  | what to do if there is no config for the current NODE_ENV. May be `null`, `'warn'`, or `'error'`. Defaults to null.
+isGlobal        | Boolean | if true then imports of the same installation of Copin will share the config object. Defaults to `true`
+extConfig       | Object  | if you have config from other sources you can include them here. They will override all config values except those from environmental variables mapped by ENV_MAP.
 
 ```
 var host = config.get('server.host');

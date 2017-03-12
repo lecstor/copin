@@ -74,7 +74,8 @@ export default function Copin ({
   fileOnlyNodeEnv = 'test',
   reload = false,
   noNodeEnvConfig = null,
-  isGlobal = true
+  isGlobal = true,
+  extConfig = {}
 } = {}) {
   if (isGlobal && GLOBAL_CONFIG && !reload) {
     return GLOBAL_CONFIG;
@@ -90,7 +91,7 @@ export default function Copin ({
   const modeConfig = loadConfig(`${dir}/${NODE_ENV}.yaml`);
   checkModeConfig(modeConfig, noNodeEnvConfig);
 
-  const mergedConfig = _merge({}, defaultConfig || {}, modeConfig || {});
+  const mergedConfig = _merge({}, defaultConfig || {}, modeConfig || {}, extConfig);
 
   if (NODE_ENV !== fileOnlyNodeEnv) {
     const envConfig = loadConfig(`${dir}/ENV_MAP.yaml`);
