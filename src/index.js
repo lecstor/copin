@@ -46,13 +46,13 @@ export function convertEnvConfig ({ source, location, result }) {
   return result;
 }
 
-function checkModeConfig (modeConfig, noModeConfig) {
-  if (!modeConfig && noModeConfig) {
+function checkModeConfig (modeConfig, noNodeEnvConfig) {
+  if (!modeConfig && noNodeEnvConfig) {
     const err = `config not found for NODE_ENV "${NODE_ENV}"`;
-    if (noModeConfig === 'warn') {
+    if (noNodeEnvConfig === 'warn') {
       return console.log(`WARN: ${err}`);
     }
-    // noModeConfig === 'error'
+    // noNodeEnvConfig === 'error'
     throw new Error(err);
   }
 }
@@ -71,28 +71,28 @@ const config = {
 
 export default function Copin ({
   dir = 'config',
-  noEnvMode = 'test',
-  fresh = false,
-  noModeConfig = null,
+  fileOnlyNodeEnv = 'test',
+  reload = false,
+  noNodeEnvConfig = null,
   isGlobal = true
 } = {}) {
-  if (isGlobal && GLOBAL_CONFIG && !fresh) {
+  if (isGlobal && GLOBAL_CONFIG && !reload) {
     return GLOBAL_CONFIG;
   }
 
   assert(
-    !noModeConfig || _includes(['warn', 'error'], noModeConfig),
-    `'noModeConfig' must be one of null (default), 'warn', or 'error', not ${noModeConfig}`
+    !noNodeEnvConfig || _includes(['warn', 'error'], noNodeEnvConfig),
+    `'noNodeEnvConfig' must be one of null (default), 'warn', or 'error', not ${noNodeEnvConfig}`
   );
 
   const defaultConfig = loadConfig(`${dir}/default.yaml`);
 
   const modeConfig = loadConfig(`${dir}/${NODE_ENV}.yaml`);
-  checkModeConfig(modeConfig, noModeConfig);
+  checkModeConfig(modeConfig, noNodeEnvConfig);
 
   const mergedConfig = _merge({}, defaultConfig || {}, modeConfig || {});
 
-  if (NODE_ENV !== noEnvMode) {
+  if (NODE_ENV !== fileOnlyNodeEnv) {
     const envConfig = loadConfig(`${dir}/ENV_MAP.yaml`);
     _merge(mergedConfig, convertEnvConfig({ source: envConfig, location: '', result: {} }));
   }

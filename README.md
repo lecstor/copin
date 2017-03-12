@@ -1,5 +1,5 @@
-Configure your Node.js Applications
-===================================
+Config for Node.js Apps
+=======================
 
 Introduction
 ------------
@@ -103,7 +103,7 @@ if (config.has('node.env')) {
 API
 ---
 
-`Copin([{ dir, fresh, noEnvMode, noModeConfig, isGlobal }]);`
+`Copin([{ dir, reload, fileOnlyNodeEnv, noNodeEnvConfig, isGlobal }]);`
 
 Get an instance of Copin. In normal use it's likely you will not need to specify
 any options unless your config files are located somewhere other than the config
@@ -116,9 +116,9 @@ var config = Copin({ dir: 'copin/config/files' });
 option  | type      | description
 --------|-----------|------------
 dir     | {String}  | relative path to the config directory. defaults to `config`
-fresh   | {Boolean} | if true, config will be reloaded. defaults to false
-noEnvMode | {String} | a NODE_ENV value for which environmental variables should not be merged into the config. defaults to `test`
-noModeConfig | {String} | what to do if there is no config for the current mode (NODE_ENV). may be `null`, 'war', or 'error'. Defaults to null.
+reload  | {Boolean} | if true, config will be reloaded. defaults to false
+fileOnlyNodeEnv | {String}  | a NODE_ENV value for which environmental variables should not be merged into the config. defaults to `test`
+noNodeEnvConfig | {String} | what to do if there is no config for the current NODE_ENV. May be `null`, `'warn'`, or `'error'`. Defaults to null.
 isGlobal | {Boolean} | if true then imports of the same installation of Copin will share the config object. Defaults to `true`
 
 ```
@@ -136,6 +136,6 @@ Use `has` to test if a configuration value is defined. Returns `true`|`false`.
 License
 -------
 
-May be freely distributed under the [MIT license](https://raw.githubusercontent.com/lorenwest/node-config/master/LICENSE).
+May be freely distributed under the [MIT license](https://raw.githubusercontent.com/lecstor/copin/master/LICENSE).
 
 Copyright (c) 2017 Jason Galea
