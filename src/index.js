@@ -1,12 +1,18 @@
 import path from 'path';
+import assert from 'assert';
 import fs from 'fs';
 import yaml from 'js-yaml';
+
 import _get from 'lodash/get';
 import _set from 'lodash/set';
 import _has from 'lodash/has';
-import _isObject from 'lodash/isObject';
 import _merge from 'lodash/merge';
 import _forEach from 'lodash/forEach';
+import _isObject from 'lodash/isObject';
+import _includes from 'lodash/includes';
+
+let GLOBAL_CONFIG;
+const NODE_ENV = process.env.NODE_ENV;
 
 export function loadConfig (relativePath) {
   const fullPath = path.join(process.cwd(), relativePath);
@@ -40,7 +46,16 @@ export function convertEnvConfig ({ source, location, result }) {
   return result;
 }
 
-let GLOBAL_CONFIG;
+function checkModeConfig (modeConfig, noModeConfig) {
+  if (!modeConfig && noModeConfig) {
+    const err = `config not found for NODE_ENV "${NODE_ENV}"`;
+    if (noModeConfig === 'warn') {
+      return console.log(`WARN: ${err}`);
+    }
+    // noModeConfig === 'error'
+    throw new Error(err);
+  }
+}
 
 const config = {
   get (path) {
@@ -54,17 +69,37 @@ const config = {
   }
 };
 
-export default function Copin ({ dir = 'config', noEnvMode = 'test', fresh = false } = {}) {
-  if (GLOBAL_CONFIG && !fresh) {
+export default function Copin ({
+  dir = 'config',
+  noEnvMode = 'test',
+  fresh = false,
+  noModeConfig = null,
+  isGlobal = true
+} = {}) {
+  if (isGlobal && GLOBAL_CONFIG && !fresh) {
     return GLOBAL_CONFIG;
   }
+
+  assert(
+    !noModeConfig || _includes(['warn', 'error'], noModeConfig),
+    `'noModeConfig' must be one of null (default), 'warn', or 'error', not ${noModeConfig}`
+  );
+
   const defaultConfig = loadConfig(`${dir}/default.yaml`);
-  const modeConfig = loadConfig(`${dir}/${process.env.NODE_ENV}.yaml`);
+
+  const modeConfig = loadConfig(`${dir}/${NODE_ENV}.yaml`);
+  checkModeConfig(modeConfig, noModeConfig);
+
   const mergedConfig = _merge({}, defaultConfig || {}, modeConfig || {});
-  const envConfig = loadConfig(`${dir}/ENV_MAP.yaml`);
-  if (process.env.NODE_ENV !== noEnvMode && envConfig) {
+
+  if (NODE_ENV !== noEnvMode) {
+    const envConfig = loadConfig(`${dir}/ENV_MAP.yaml`);
     _merge(mergedConfig, convertEnvConfig({ source: envConfig, location: '', result: {} }));
   }
-  GLOBAL_CONFIG = Object.assign(Object.create(config), mergedConfig);
-  return GLOBAL_CONFIG;
+
+  const configInstance = Object.assign(Object.create(config), mergedConfig);
+  if (isGlobal) {
+    GLOBAL_CONFIG = configInstance;
+  }
+  return configInstance;
 }
