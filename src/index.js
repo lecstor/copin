@@ -14,6 +14,11 @@ import _includes from 'lodash/includes';
 let GLOBAL_CONFIG;
 const NODE_ENV = process.env.NODE_ENV;
 
+/**
+ * read and parse a YAML file
+ * @param {String} relativePath - The path to a YAML file.
+ * @returns {Object} data from the file
+ */
 export function loadConfig (relativePath) {
   const fullPath = path.join(process.cwd(), relativePath);
   try {
@@ -35,6 +40,14 @@ export function loadConfig (relativePath) {
   return yaml.safeLoad(fileContent);
 }
 
+/**
+ * create a config object by setting properties from env vars according to ENV_MAP
+ * @param {Object} opts.source - The ENV_MAP or a subtree of the ENV_MAP.
+ * @param {String} opts.location - The path to the current ENV_MAP subtree.
+ * @param {Object} [opts.result] - An object representing the full config
+ *     object tree to set values on.
+ * @returns {Object} config to be merged into the main config object
+ */
 export function convertEnvConfig ({ source, location, result }) {
   if (_isObject(source)) {
     _forEach(source, (value, key) => {
@@ -46,8 +59,14 @@ export function convertEnvConfig ({ source, location, result }) {
   return result;
 }
 
-function checkModeConfig (modeConfig, noNodeEnvConfig) {
-  if (!modeConfig && noNodeEnvConfig) {
+/**
+ * If NODE_ENV config is not set, warn or error if option is set
+ * @param {Object} nodeEnvConfig - The config read from NODE_ENV config file.
+ * @param {String} noNodeEnvConfig - Whether to `warn`, `error`, or do nothing
+ *     (`null`) if nodeEnvConfig is not set.
+ */
+function checkNodeEnvConfig (nodeEnvConfig, noNodeEnvConfig) {
+  if (!nodeEnvConfig && noNodeEnvConfig) {
     const err = `config not found for NODE_ENV "${NODE_ENV}"`;
     if (noNodeEnvConfig === 'warn') {
       return console.log(`WARN: ${err}`);
@@ -69,6 +88,25 @@ const config = {
   }
 };
 
+/**
+ * returns a Copin instance
+ * @param {String} opts.dir - A relative path to the config directory.
+ *     Defaults to `config`.
+ * @param {String} opts.fileOnlyNodeEnv - A NODE_ENV value for which
+ *     environmental variables should not be merged into the config.
+ *     Defaults to `test`.
+ * @param {Boolean} opts.reload - If `true`, config will be reloaded.
+ *     Defaults to `false`.
+ * @param {String|null} opts.noNodeEnvConfig - What to do if there is no config
+ *     for the current NODE_ENV. May be `null`, `'warn'`, or `'error'`.
+ *     Defaults to `null`.
+ * @param {Boolean} opts.isGlobal - if `true` then imports of the same
+ *     installation of Copin will share the config object.
+ *     Defaults to `true`.
+ * @param {Object} opts.extConfig - if you have config from other sources you
+ *     can include them here. They will override all config values except those
+ *     from environmental variables mapped by ENV_MAP.
+ */
 export default function Copin ({
   dir = 'config',
   fileOnlyNodeEnv = 'test',
@@ -88,10 +126,10 @@ export default function Copin ({
 
   const defaultConfig = loadConfig(`${dir}/default.yaml`);
 
-  const modeConfig = loadConfig(`${dir}/${NODE_ENV}.yaml`);
-  checkModeConfig(modeConfig, noNodeEnvConfig);
+  const nodeEnvConfig = loadConfig(`${dir}/${NODE_ENV}.yaml`);
+  checkNodeEnvConfig(nodeEnvConfig, noNodeEnvConfig);
 
-  const mergedConfig = _merge({}, defaultConfig || {}, modeConfig || {}, extConfig);
+  const mergedConfig = _merge({}, defaultConfig || {}, nodeEnvConfig || {}, extConfig);
 
   if (NODE_ENV !== fileOnlyNodeEnv) {
     const envConfig = loadConfig(`${dir}/ENV_MAP.yaml`);
