@@ -12,7 +12,7 @@ import _isObject from 'lodash/isObject';
 import _includes from 'lodash/includes';
 
 let GLOBAL_CONFIG;
-const NODE_ENV = process.env.NODE_ENV;
+const NODE_ENV = process.env.NODE_ENV || 'development';
 
 /**
  * read and parse a YAML file
