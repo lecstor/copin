@@ -27,7 +27,8 @@ that config is loaded and merged with the default config. eg NODE_ENV=production
 production.yaml will be loaded.
 * ENV_MAP.yaml can be used to set config values from shell environment variables. ENV_MAP is not used if NODE_ENV='test'.
 
-**Install**
+Installation
+------------
 
 ```shell
 $ yarn add copin
@@ -35,42 +36,117 @@ $ yarn add copin
 $ npm i -S copin
 ```
 
-**Create a config directory in your app and add a default config file.**
+Setup
+-----
+
+**Create config files in your app**
 
 The config directory is `config` by default, but this can be customised when
 creating the Copin instance.
 
-```shell
-$ mkdir config
-$ vi config/default.yaml
 ```
+my-app
+├── config/
+│   ├── default.yaml
+│   ├── ENV_MAP.yaml
+│   ├── production.yaml
+│   └── test.yaml
+├── src/
+└── README.md
+```
+
+default.yaml:
 ```yaml
 server:
   host: localhost
   port: 8080
+  log_level: info
 ```
 
-**Add `config/production.yaml`**
-
-This will be merged into config when NODE_ENV=production
-
+production.yaml:
 ```yaml
 server:
   host: myapp
   port: 80
 ```
 
-**Add `config/ENV_MAP.yaml` if required**
-
-This will map environment variables to config values.
-This will not be used when NODE_ENV='test'.
-
+test.yaml:
 ```yaml
-node:
-  env: NODE_ENV
+server:
+  log_level: fatal
+```
+
+ENV_MAP.yaml:
+```yaml
 server:
   host: MY_APP_HOST
 ```
+
+Scenario Examples
+-----------------
+
+**bare start**
+
+`npm start`
+
+- internal NODE_ENV defaults to 'development'.
+- default.yaml is loaded and used as config.
+- ENV_MAP is checked but does not affect config as MY_APP_HOST is not set in the environment.
+
+```yaml
+server:
+  host: localhost
+  port: 8080
+  log_level: info
+```
+
+**start with environment variable**
+
+`MY_APP_HOST=app-host npm start`
+
+- internal NODE_ENV defaults to 'development'.
+- default.yaml is loaded and used as config.
+- ENV_MAP overrides server.host to `app-host`.
+
+```yaml
+server:
+  host: app-host
+  port: 8080
+  log_level: info
+```
+
+**start in production with environment variable**
+
+`MY_APP_HOST=app-host NODE_ENV=production npm start`
+
+- default.yaml is loaded and used as config.
+- production.yaml is loaded and merged into the config.
+- ENV_MAP overrides server.host to `app-host`.
+
+```yaml
+server:
+  host: app-host
+  port: 80
+  log_level: info
+```
+
+**start in test with environment variable**
+
+`MY_APP_HOST=app-host NODE_ENV=test npm start`
+
+- default.yaml is loaded and used as config.
+- test.yaml is loaded and merged into the config.
+- ENV_MAP is not loaded (in test mode).
+
+```yaml
+server:
+  host: localhost
+  port: 8080
+  log_level: fatal
+```
+
+Usage
+-----
 
 **Import/Require Copin**
 
