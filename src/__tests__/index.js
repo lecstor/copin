@@ -121,6 +121,11 @@ describe('load config', () => {
       const config = Copin({ ...defaultOpts, fileOnlyNodeEnv: null });
       expect(config.fromEnv).toBe('test');
     });
+
+    it('unset ENV vars do not override config', () => {
+      const config = Copin(defaultOpts);
+      expect(config.env_mapped).toBe('set by default.yaml');
+    });
   });
 });
 

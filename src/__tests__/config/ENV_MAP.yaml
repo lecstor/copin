@@ -4,3 +4,5 @@
 node:
   env: NODE_ENV
 fromEnv: NODE_ENV
+
+env_mapped: ENV_MAPPED

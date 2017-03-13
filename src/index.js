@@ -55,7 +55,9 @@ export function convertEnvConfig ({ source, location, result }) {
     });
     return result;
   }
-  _set(result, location, process.env[source]);
+  if (process.env[source]) {
+    _set(result, location, process.env[source]);
+  }
   return result;
 }
 
