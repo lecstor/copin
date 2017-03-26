@@ -64,16 +64,16 @@ export function convertEnvConfig ({ source, location, result }) {
 /**
  * If NODE_ENV config is not set, warn or error if option is set
  * @param {Object} nodeEnvConfig - The config read from NODE_ENV config file.
- * @param {String} noNodeEnvConfig - Whether to `warn`, `error`, or do nothing
+ * @param {String} alertNoNodeEnvConfig - Whether to `warn`, `error`, or do nothing
  *     (`null`) if nodeEnvConfig is not set.
  */
-function checkNodeEnvConfig (nodeEnvConfig, noNodeEnvConfig) {
-  if (!nodeEnvConfig && noNodeEnvConfig) {
+function checkAlertNoNodeEnvConfig (nodeEnvConfig, alertNoNodeEnvConfig) {
+  if (!nodeEnvConfig && alertNoNodeEnvConfig) {
     const err = `config not found for NODE_ENV "${NODE_ENV}"`;
-    if (noNodeEnvConfig === 'warn') {
+    if (alertNoNodeEnvConfig === 'warn') {
       return console.log(`WARN: ${err}`);
     }
-    // noNodeEnvConfig === 'error'
+    // alertNoNodeEnvConfig === 'error'
     throw new Error(err);
   }
 }
@@ -94,12 +94,13 @@ const config = {
  * returns a Copin instance
  * @param {String} opts.dir - A relative path to the config directory.
  *     Defaults to `config`.
- * @param {String} opts.fileOnlyNodeEnv - A NODE_ENV value for which
- *     environmental variables should not be merged into the config.
- *     Defaults to `test`.
+ * @param {Boolean} opts.includeEnvMapInTest - if `true`, env map values will be
+ *     included in test mode. Defaults to `false`.
+ * @param {Boolean} opts.includeLocalInTest - if `true`, local.yaml values will
+ *     be included in test mode. Defaults to `false`.
  * @param {Boolean} opts.reload - If `true`, config will be reloaded.
  *     Defaults to `false`.
- * @param {String|null} opts.noNodeEnvConfig - What to do if there is no config
+ * @param {String|null} opts.alertNoNodeEnvConfig - What to do if there is no config
  *     for the current NODE_ENV. May be `null`, `'warn'`, or `'error'`.
  *     Defaults to `null`.
  * @param {Boolean} opts.isGlobal - if `true` then imports of the same
@@ -111,9 +112,10 @@ const config = {
  */
 export default function Copin ({
   dir = 'config',
-  fileOnlyNodeEnv = 'test',
+  includeEnvMapInTest = false,
+  includeLocalInTest = false,
   reload = false,
-  noNodeEnvConfig = null,
+  alertNoNodeEnvConfig = null,
   isGlobal = true,
   extConfig = {}
 } = {}) {
@@ -122,20 +124,27 @@ export default function Copin ({
   }
 
   assert(
-    !noNodeEnvConfig || _includes(['warn', 'error'], noNodeEnvConfig),
-    `'noNodeEnvConfig' must be one of null (default), 'warn', or 'error', not ${noNodeEnvConfig}`
+    !alertNoNodeEnvConfig || _includes(['warn', 'error'], alertNoNodeEnvConfig),
+    `'alertNoNodeEnvConfig' must be one of null (default), 'warn', or 'error', not ${alertNoNodeEnvConfig}`
   );
 
   const defaultConfig = loadConfig(`${dir}/default.yaml`);
 
   const nodeEnvConfig = loadConfig(`${dir}/${NODE_ENV}.yaml`);
-  checkNodeEnvConfig(nodeEnvConfig, noNodeEnvConfig);
+  checkAlertNoNodeEnvConfig(nodeEnvConfig, alertNoNodeEnvConfig);
 
   const mergedConfig = _merge({}, defaultConfig || {}, nodeEnvConfig || {}, extConfig);
 
-  if (NODE_ENV !== fileOnlyNodeEnv) {
+  if ((NODE_ENV !== 'test') || includeEnvMapInTest) {
     const envConfig = loadConfig(`${dir}/ENV_MAP.yaml`);
     _merge(mergedConfig, convertEnvConfig({ source: envConfig, location: '', result: {} }));
+  }
+
+  if (NODE_ENV !== 'test' || includeLocalInTest) {
+    const localConfig = loadConfig(`${dir}/local.yaml`);
+    if (localConfig) {
+      _merge(mergedConfig, localConfig);
+    }
   }
 
   const configInstance = Object.assign(Object.create(config), mergedConfig);

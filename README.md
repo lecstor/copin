@@ -25,7 +25,9 @@ config.
 * If a config file exists that has the same name as the value of NODE_ENV then
 that config is loaded and merged with the default config. eg NODE_ENV=production,
 production.yaml will be loaded.
-* ENV_MAP.yaml can be used to set config values from shell environment variables. ENV_MAP is not used if NODE_ENV='test'.
+* unless NODE_ENV == 'test'
+  * ENV_MAP.yaml will be used to set config values from shell environment variables.
+  * local.yaml will override all other config values
 
 Installation
 ------------
@@ -49,13 +51,20 @@ my-app
 ├── config/
 │   ├── default.yaml
 │   ├── ENV_MAP.yaml
+│   ├── local.yaml
 │   ├── production.yaml
 │   └── test.yaml
 ├── src/
+├── .gitignore
 └── README.md
 ```
 
-default.yaml:
+.gitignore:
+```
+config/local.yaml
+```
+
+config/default.yaml:
 ```yaml
 server:
   host: localhost
@@ -63,20 +72,20 @@ server:
   log_level: info
 ```
 
-production.yaml:
+config/production.yaml:
 ```yaml
 server:
   host: myapp
   port: 80
 ```
 
-test.yaml:
+config/test.yaml:
 ```yaml
 server:
   log_level: fatal
 ```
 
-ENV_MAP.yaml:
+config/ENV_MAP.yaml:
 ```yaml
 server:
   host: MY_APP_HOST
@@ -145,6 +154,25 @@ server:
   log_level: fatal
 ```
 
+**add a local config**
+
+config/local.yaml:
+```yaml
+server:
+  port: 8765
+```
+
+`npm start`
+
+- local.yaml overrides the port
+
+```yaml
+server:
+  host: localhost
+  port: 8765
+  log_level: info
+```
+
 Usage
 -----
 
@@ -189,14 +217,15 @@ directory.
 var config = Copin({ dir: 'copin/config/files' });
 ```
 
-option          | type    | description
-----------------|---------|------------
-dir             | String  | relative path to the config directory. defaults to `config`
-reload          | Boolean | if `true`, config will be reloaded. defaults to `false`
-fileOnlyNodeEnv | String  | a NODE_ENV value for which environmental variables should not be merged into the config. defaults to `test`
-noNodeEnvConfig | String  | what to do if there is no config for the current NODE_ENV. May be `null`, `'warn'`, or `'error'`. Defaults to `null`.
-isGlobal        | Boolean | if `true` then imports of the same installation of Copin will share the config object. Defaults to `true`
-extConfig       | Object  | if you have config from other sources you can include them here. They will override all config values except those from environmental variables mapped by ENV_MAP.
+option               | type    | description
+---------------------|---------|------------
+dir                  | String  | relative path to the config directory. defaults to `config`
+reload               | Boolean | if `true`, config will be reloaded. defaults to `false`
+includeEnvMapInTest  | Boolean | if `true`, env map values will be included in test mode. defaults to `false`
+includeLocalInTest   | Boolean | if `true`, local.yaml values will be included in test mode. defaults to `false`
+alertNoNodeEnvConfig | String  | what to do if there is no config for the current NODE_ENV. May be `null`, `'warn'`, or `'error'`. Defaults to `null`.
+isGlobal             | Boolean | if `true` then imports of the same installation of Copin will share the config object. Defaults to `true`
+extConfig            | Object  | if you have config from other sources you can include them here. They will override all config values except those from environmental variables mapped by ENV_MAP.
 
 ```
 var host = config.get('server.host');

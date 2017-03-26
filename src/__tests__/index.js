@@ -2,7 +2,12 @@ import * as fs from 'fs';
 
 import Copin from '../';
 
-const defaultOpts = { dir: './src/__tests__/config', reload: true, isGlobal: false, fileOnlyNodeEnv: null };
+const defaultOpts = {
+  dir: './src/__tests__/config',
+  reload: true,
+  isGlobal: false,
+  // includeEnvMapInTest: true
+};
 
 describe('load config', () => {
   it('loads the default config', () => {
@@ -14,21 +19,25 @@ describe('load config', () => {
   });
 
   it('loads the default config (reload: true)', () => {
-    const config = Copin({ reload: true, fileOnlyNodeEnv: null });
+    const config = Copin({ reload: true, includeEnvMapInTest: true });
     expect(config).toBeDefined();
     expect(config.test).toBe('hurrah!');
     expect(config.fromEnv).toBe('test');
   });
 
   it('loads the default config (isGlobal: false)', () => {
-    const config = Copin({ isGlobal: false, fileOnlyNodeEnv: null });
+    const config = Copin({ isGlobal: false, includeEnvMapInTest: true });
     expect(config).toBeDefined();
     expect(config.test).toBe('hurrah!');
     expect(config.fromEnv).toBe('test');
   });
 
   it('loads config even when default does not exist', () => {
-    const config = Copin({ ...defaultOpts, dir: './src/__tests__/config-no-default' });
+    const config = Copin({
+      ...defaultOpts,
+      dir: './src/__tests__/config-no-default',
+      includeEnvMapInTest: true
+    });
     expect(config).toBeDefined();
     expect(config.fromTest).toBe('set by test.yaml');
     expect(config.fromEnv).toBe('test');
@@ -51,8 +60,26 @@ describe('load config', () => {
     expect(config.fromExt).toBe('set by external config');
   });
 
-  it('throws an error on invalid noNodeEnvConfig option', () => {
-    expect(() => Copin({ ...defaultOpts, noNodeEnvConfig: 'WRONG' })).toThrow();
+  it('local config overrides everything', () => {
+    const config = Copin({
+      ...defaultOpts,
+      dir: './src/__tests__/config-with-local',
+      extConfig: { fromLocal: 'set by external config' },
+      includeLocalInTest: true
+    });
+    expect(config.fromLocal).toBe('set by local.yaml');
+  });
+
+  it('local config not loaded when NODE_ENV==test', () => {
+    const config = Copin({
+      ...defaultOpts,
+      dir: './src/__tests__/config-with-local'
+    });
+    expect(config.fromTest).toBe('set by test.yaml');
+  });
+
+  it('throws an error on invalid alertNoNodeEnvConfig option', () => {
+    expect(() => Copin({ ...defaultOpts, alertNoNodeEnvConfig: 'WRONG' })).toThrow();
   });
 
   it('throws an error on unreadable config file', () => {
@@ -74,7 +101,7 @@ describe('load config', () => {
       console.log = (msg) => {
         log.push(msg);
       };
-      const config = Copin({ ...defaultOpts, dir: './src/__tests__/config-no-mode', noNodeEnvConfig: 'warn' });
+      const config = Copin({ ...defaultOpts, dir: './src/__tests__/config-no-mode', alertNoNodeEnvConfig: 'warn' });
       console.log = origLog;
       expect(log[0]).toEqual('WARN: config not found for NODE_ENV "test"');
       expect(config.fromDefault).toBe('Hello World!');
@@ -82,7 +109,7 @@ describe('load config', () => {
     });
 
     it('throws an error on missing mode config', () => {
-      expect(() => Copin({ ...defaultOpts, dir: './src/__tests__/config-no-mode', noNodeEnvConfig: 'error' })).toThrow();
+      expect(() => Copin({ ...defaultOpts, dir: './src/__tests__/config-no-mode', alertNoNodeEnvConfig: 'error' })).toThrow();
     });
   });
 
@@ -99,7 +126,7 @@ describe('load config', () => {
       console.log = (msg) => {
         log.push(msg);
       };
-      const config = Copin({ ...defaultOpts, dir: './src/__tests__/config-empty-mode', noNodeEnvConfig: 'warn' });
+      const config = Copin({ ...defaultOpts, dir: './src/__tests__/config-empty-mode', alertNoNodeEnvConfig: 'warn' });
       console.log = origLog;
       expect(log[0]).toEqual('WARN: config not found for NODE_ENV "test"');
       expect(config.fromDefault).toBe('Hello World!');
@@ -107,18 +134,18 @@ describe('load config', () => {
     });
 
     it('errors on empty mode config', () => {
-      expect(() => Copin({ ...defaultOpts, dir: './src/__tests__/config-empty-mode', noNodeEnvConfig: 'error' })).toThrow();
+      expect(() => Copin({ ...defaultOpts, dir: './src/__tests__/config-empty-mode', alertNoNodeEnvConfig: 'error' })).toThrow();
     });
   });
 
   describe('ENV_MAP', () => {
     it('loads ENV vars according to ENV_MAP', () => {
-      const config = Copin({ ...defaultOpts, fileOnlyNodeEnv: null });
+      const config = Copin({ ...defaultOpts, includeEnvMapInTest: true });
       expect(config.node.env).toBe('test');
     });
 
-    it('ENV vars override mode and default config', () => {
-      const config = Copin({ ...defaultOpts, fileOnlyNodeEnv: null });
+    it('ENV vars override NODE_ENV config and default config', () => {
+      const config = Copin({ ...defaultOpts, includeEnvMapInTest: true });
       expect(config.fromEnv).toBe('test');
     });
 
