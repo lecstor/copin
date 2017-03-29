@@ -32,7 +32,7 @@ production.yaml will be loaded.
 Installation
 ------------
 
-```shell
+```bash
 $ yarn add copin
 // or
 $ npm i -S copin
@@ -111,7 +111,9 @@ server:
 
 **start with environment variable**
 
-`MY_APP_HOST=app-host npm start`
+```bash
+MY_APP_HOST=app-host npm start
+```
 
 - internal NODE_ENV defaults to 'development'.
 - default.yaml is loaded and used as config.
@@ -126,8 +128,9 @@ server:
 
 **start in production with environment variable**
 
-`MY_APP_HOST=app-host NODE_ENV=production npm start`
-
+```bash
+MY_APP_HOST=app-host NODE_ENV=production npm start`
+```
 - default.yaml is loaded and used as config.
 - production.yaml is loaded and merged into the config.
 - ENV_MAP overrides server.host to `app-host`.
@@ -141,8 +144,9 @@ server:
 
 **start in test with environment variable**
 
-`MY_APP_HOST=app-host NODE_ENV=test npm start`
-
+```bash
+MY_APP_HOST=app-host NODE_ENV=test npm start`
+```
 - default.yaml is loaded and used as config.
 - test.yaml is loaded and merged into the config.
 - ENV_MAP is not loaded (in test mode).
@@ -161,8 +165,6 @@ config/local.yaml:
 server:
   port: 8765
 ```
-
-`npm start`
 
 - local.yaml overrides the port
 
@@ -189,7 +191,7 @@ import Copin from 'copin';
 ```
 
 **Usage**
-```
+```js
 var config = Copin();
 
 var serverHost = config.get('server.host');
@@ -207,13 +209,15 @@ if (config.has('node.env')) {
 API
 ---
 
-`Copin([{ dir, reload, fileOnlyNodeEnv, noNodeEnvConfig, isGlobal }]);`
+```js
+Copin([{ dir, reload, fileOnlyNodeEnv, noNodeEnvConfig, isGlobal }]);
+```
 
 Get an instance of Copin. In normal use it's likely you will not need to specify
 any options unless your config files are located somewhere other than the config
 directory.
 
-```
+```js
 var config = Copin({ dir: 'copin/config/files' });
 ```
 
@@ -227,14 +231,14 @@ alertNoNodeEnvConfig | String  | what to do if there is no config for the curren
 isGlobal             | Boolean | if `true` then imports of the same installation of Copin will share the config object. Defaults to `true`
 extConfig            | Object  | if you have config from other sources you can include them here. They will override all config values except those from environmental variables mapped by ENV_MAP.
 
-```
+```js
 var host = config.get('server.host');
 var host = config.server.host;
 ```
 `get` will throw an exception for undefined keys to help catch typos and missing values.
 You can access values directly if you prefer.
 
-```
+```js
 var hasHost = config.has('server.host');
 ```
 Use `has` to test if a configuration value is defined. Returns `true`|`false`.
