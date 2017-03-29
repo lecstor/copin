@@ -5,8 +5,7 @@ import Copin from '../';
 const defaultOpts = {
   dir: './src/__tests__/config',
   reload: true,
-  isGlobal: false,
-  // includeEnvMapInTest: true
+  isGlobal: false
 };
 
 describe('load config', () => {
