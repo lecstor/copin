@@ -1,11 +1,13 @@
 {
   "name": "copin",
-  "version": "0.0.6",
+  "version": "2.0.0",
   "description": "Opinionated Config for Typescript/Node apps",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "jsnext:main": "dist/index.es.js",
-  "files": [ "dist" ],
+  "files": [
+    "dist"
+  ],
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "rollup -c",
