@@ -1,9 +1,9 @@
 .editorconfig
 .eslintrc
 yarn.lock
-/.idea/
-/*.tgz
-/.travis.yml
-/out/
-/coverage/
-./config/
+.idea/
+*.tgz
+.travis.yml
+fixtures/
+coverage/
+config/

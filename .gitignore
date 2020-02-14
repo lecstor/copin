@@ -92,7 +92,7 @@ Session.vim
 *~
 
 # Babel output
-/dist/
+dist/
 
 # Yarn
 yarn-error.log
